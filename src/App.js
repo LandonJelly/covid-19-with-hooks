@@ -1,7 +1,7 @@
 /*
  * @Description: This file is made for
  * @Date: 2020-07-14 22:50:23
- * @LastEditTime: 2020-07-18 23:09:03
+ * @LastEditTime: 2020-07-19 09:17:52
  * @Author: LeongD
  * @LastEditors: LeongD
  */
@@ -12,36 +12,20 @@ import "./App.css";
 import GlobalStats from "./components/GlobalStats";
 import CountriesChart from "./components/CountriesChart";
 import SelectDataKey from "./components/SelectDataKey";
-
+import { useCoronaAPI } from "./hooks/useCoronaAPI";
 const BASE_URL = "https://corona.lmao.ninja/v2";
-
 function App() {
-  const [globalStats, setGlobalStats] = useState({});
-  const [countries, setCountries] = useState([]);
   const [key, setKey] = useState("cases");
 
-  useEffect(() => {
-    const fetchGlobalStats = async () => {
-      const response = await fetch(`${BASE_URL}/all`);
-      const data = await response.json();
-      setGlobalStats(data);
-    };
+  const globalStats = useCoronaAPI("/all", {
+    initialData: {},
+    refetchInterval: 5000,
+  });
 
-    fetchGlobalStats();
-
-    const intervalId = setInterval(fetchGlobalStats, 5000);
-
-    return () => clearInterval(intervalId);
-  }, []);
-
-  useEffect(() => {
-    const fetchCountries = async () => {
-      const response = await fetch(`${BASE_URL}/countries?sort=${key}`);
-      const data = await response.json();
-      setCountries(data.slice(0, 10));
-    };
-    fetchCountries();
-  }, [key]);
+  const countries = useCoronaAPI(`/countries?sort=${key}`, {
+    initialData: [],
+    converter: (data) => data.slice(0, 10),
+  });
 
   return (
     <div className="App">
@@ -52,7 +36,5 @@ function App() {
     </div>
   );
 }
-
-// 14194726
 
 export default App;
